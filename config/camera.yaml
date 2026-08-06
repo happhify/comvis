@@ -1,28 +1,12 @@
 cameras:
-  # id kamera yang aktif saat worker pertama kali start (sebelum ada
-  # perintah switch dari dashboard).
   default: "kamera_1"
-
-  # Dipakai kalau RTSP kamera yang sedang aktif gagal dibuka sama sekali.
   fallback_video: "videos/Video Project.mp4"
 
-  # Daftar semua kamera yang bisa dipilih dari dashboard.
-  # - id           : unik, dipakai internal (recognition cache di-reset
-  #                  tiap kali pindah kamera, karena tempatnya beda)
-  # - name         : nama yang tampil di dashboard
-  # - rtsp_env_key : nama variabel di .env yang berisi RTSP URL kamera ini
-  #                  (URL/kredensial-nya SENDIRI TIDAK ditaruh di sini,
-  #                  supaya tidak ikut ke-commit / ke-share)
   list:
     - id: "kamera_1"
       name: "GDG PUSDATIN LT 1.1"
       rtsp_env_key: "RTSP_URL"
 
-    # Contoh kamera ke-2 untuk tes fitur switch: RTSP_URL_2 belum diisi
-    # di .env, jadi kalau dipilih dia otomatis jatuh ke fallback_video -
-    # itu sudah cukup untuk membuktikan mekanisme pindah kamera jalan.
-    # Ganti "rtsp_env_key" (dan isi RTSP_URL_2 di .env) begitu ada kamera
-    # sungguhan, lalu tambah entri serupa untuk 18 kamera PUSDATIN lainnya.
     - id: "kamera_2"
       name: "GDG PUSDATIN LT 1.2"
       rtsp_env_key: "RTSP_URL_2"
