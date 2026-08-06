@@ -136,25 +136,53 @@ function AnalyticsPage({ stats, control }) {
         </div>
       </header>
 
-      {attendance && (
-        <div className={`attendance-card ${attendance.status}`}>
-          <div>
-            <div className={`attendance-status ${attendance.status}`}>
-              {attendance.status === "present"
-                ? `Present since ${fmtTime(attendance.arrived_at)}`
-                : "Not yet arrived today"}
-            </div>
-            {attendance.status === "present" && attendance.last_seen && (
-              <div className="attendance-detail">
-                Last seen at {fmtTime(attendance.last_seen)}
-              </div>
-            )}
+      {attendance && attendance.employees?.length > 0 && (
+        <section className="panel-card">
+          <h3 className="panel-title">Attendance Today &middot; {attendance.date}</h3>
+
+          <table className="user-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Status</th>
+                <th>Arrived</th>
+                <th>Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attendance.employees.map((emp) => (
+                <tr key={emp.id}>
+                  <td>
+                    {emp.name}
+                    {emp.source === "dummy" && (
+                      <span className="det-badge badge-neutral attendance-demo-tag">
+                        DEMO DATA
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <span
+                      className={`det-badge ${
+                        emp.status === "present" ? "badge-green" : "badge-amber"
+                      }`}
+                    >
+                      {emp.status === "present" ? "PRESENT" : "ABSENT"}
+                    </span>
+                  </td>
+                  <td className="user-created">{fmtTime(emp.arrived_at) || "–"}</td>
+                  <td className="user-created">{fmtTime(emp.last_seen) || "–"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="daily-note">
+            "Absent" is based on the camera(s) actually monitored today &mdash;
+            it doesn't guarantee the person isn't in the building. Entries
+            marked "Demo data" are placeholders until the classifier can
+            recognize that employee.
           </div>
-          <div className="attendance-note">
-            Based on the camera(s) actually monitored today &mdash; "not yet
-            arrived" doesn't guarantee they're not in the building.
-          </div>
-        </div>
+        </section>
       )}
 
       <div className="summary-cards">

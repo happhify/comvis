@@ -524,6 +524,7 @@ body {
 
 .badge-green   { background: var(--green-dim); color: var(--green); }
 .badge-red     { background: var(--red-dim);   color: var(--red); }
+.badge-amber   { background: var(--amber-dim); color: var(--amber); }
 .badge-neutral { background: var(--bg-card);   color: var(--text-muted); }
 
 .det-meta { min-width: 0; flex: 1; }
@@ -907,41 +908,12 @@ body {
   min-width: 0;
 }
 
-/* ---------- Kartu status kehadiran hari ini ---------- */
-.attendance-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.attendance-card.present { border-left-color: var(--green); }
-.attendance-card.absent  { border-left-color: var(--amber); }
-
-.attendance-status {
-  font-size: 16px;
-  font-weight: 800;
-}
-.attendance-status.present { color: var(--green); }
-.attendance-status.absent  { color: var(--amber); }
-
-.attendance-detail {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 3px;
-}
-
-.attendance-note {
-  font-size: 11px;
-  color: var(--text-muted);
-  max-width: 360px;
-  text-align: right;
-  line-height: 1.4;
+/* ---------- Tabel absensi hari ini ---------- */
+.attendance-demo-tag {
+  margin-left: 8px;
+  font-size: 9px;
+  padding: 1px 6px;
+  letter-spacing: 0.4px;
 }
 
 /* ---------- Kartu ringkasan (4 kartu) ---------- */

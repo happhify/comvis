@@ -1,0 +1,38 @@
+# Daftar pegawai untuk fitur absensi.
+#
+# - id     : unik, dipakai internal
+# - name   : nama yang tampil di dashboard
+# - source : "real"  -> statusnya dihitung dari detection_log.csv (classifier
+#                        baru bisa mengenali "hadi", jadi baru dia yang "real")
+#            "dummy" -> classifier belum bisa mengenali orang ini, statusnya
+#                        pakai nilai tetap di bawah (dummy_*) sampai model
+#                        classifier di-retrain jadi multi-kelas.
+# - dummy_status / dummy_arrived_at / dummy_last_seen : hanya dipakai kalau
+#   source = "dummy". Jam ditulis "HH:MM", dikombinasikan dengan tanggal hari
+#   ini saat ditampilkan.
+
+employees:
+  - id: "hadi"
+    name: "Hadi"
+    source: "real"
+
+  - id: "karyawan_2"
+    name: "Karyawan 2"
+    source: "dummy"
+    dummy_status: "present"
+    dummy_arrived_at: "08:05"
+    dummy_last_seen: "12:40"
+
+  - id: "karyawan_3"
+    name: "Karyawan 3"
+    source: "dummy"
+    dummy_status: "absent"
+    dummy_arrived_at: null
+    dummy_last_seen: null
+
+  - id: "karyawan_4"
+    name: "Karyawan 4"
+    source: "dummy"
+    dummy_status: "present"
+    dummy_arrived_at: "07:52"
+    dummy_last_seen: "16:10"
