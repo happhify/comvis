@@ -149,12 +149,6 @@ function Sidebar({
           </button>
         </div>
       )}
-
-      <div className="sidebar-footer">
-        Internship prototype &middot; RTSP CCTV
-        <br />
-        YOLO + Classifier
-      </div>
     </aside>
   );
 }

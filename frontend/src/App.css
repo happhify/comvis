@@ -294,15 +294,6 @@ body {
 .status-dot.waiting { background: var(--amber); }
 .status-dot.offline { background: var(--red); }
 
-.sidebar-footer {
-  margin-top: auto;
-  padding: 12px 4px 2px 4px;
-  border-top: 1px solid var(--border);
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
 /* ================= KOLOM TENGAH (HEADER + VIDEO) ================= */
 .main {
   display: flex;
@@ -853,9 +844,6 @@ body {
   border-color: var(--red);
   color: var(--red);
 }
-
-/* sidebar-footer tidak lagi menempel ke bawah (digantikan sidebar-user) */
-.sidebar .sidebar-footer { margin-top: 0; }
 
 /* ============================================================
    STAGE 1 — Menu navigasi sidebar + Halaman Analitik
