@@ -1,0 +1,1369 @@
+/* ============================================================
+   TAHAP 9 — App.css
+   Dashboard gaya VisionTrack: dark theme, sidebar kiri,
+   video dominan di tengah, panel statistik di kanan.
+   CSS biasa, tanpa Tailwind.
+   ============================================================ */
+
+/* ---------- 1. Design tokens (variabel warna & ukuran) ----------
+   Semua warna didefinisikan di satu tempat. Kalau mau ganti tema,
+   cukup ubah di sini. */
+:root {
+  --bg: #0a0e16;            /* latar paling gelap (belakang semua) */
+  --bg-panel: #0f1522;      /* sidebar & panel kanan */
+  --bg-card: #141c2c;       /* kartu / card */
+  --bg-card-2: #18213470;   /* kartu semi transparan */
+  --border: #22304a;        /* garis pemisah */
+  --text: #e7ebf3;          /* teks utama */
+  --text-muted: #8b96ab;    /* teks redup */
+
+  --green: #22c55e;         /* Employee / LIVE */
+  --green-dim: rgba(34, 197, 94, 0.12);
+  --red: #ef4444;           /* Unknown / OFFLINE */
+  --red-dim: rgba(239, 68, 68, 0.12);
+  --amber: #f59e0b;         /* WAITING / warning */
+  --amber-dim: rgba(245, 158, 11, 0.12);
+  --blue: #3b82f6;          /* aksen umum / total */
+  --blue-dim: rgba(59, 130, 246, 0.12);
+
+  --radius: 12px;
+  /* Font utama: Plus Jakarta Sans (di-load via <link> di index.html).
+     Kalau offline, jatuh ke system-ui otomatis. */
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: 0.1px;
+}
+
+/* ---------- Angka tabular ----------
+   Bikin semua angka lebar-sama supaya kolom/statistik rata rapi
+   dan tidak "loncat" saat nilainya berubah realtime. */
+.summary-value, .stat-value, .daily-count, .server-value,
+.user-table td, .history-table td, .det-badge,
+.hour-labels, .analytics-hourly, .sys-status-list {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Judul terasa lebih "designed": weight tegas, tracking sedikit rapat */
+.brand-title, .header-camname { letter-spacing: -0.01em; }
+
+/* ---------- Ikon info (i) pada judul panel ----------
+   Judul panel di-uppercase, jadi ikon ini WAJIB text-transform:none
+   supaya tampil "i" kecil di dalam lingkaran, bukan huruf "I". */
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.info-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: help;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.info-dot:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+/* Baris kecil di kartu Orang Aktif: durasi & confidence lebih redup */
+.active-conf { color: var(--text-muted); }
+.active-dur { font-variant-numeric: tabular-nums; }
+
+/* ---------- 2. Layout utama: 3 kolom ----------
+   [ sidebar 240px ] [ video fleksibel ] [ panel kanan 330px ] */
+.app {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 330px;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* ================= SIDEBAR KIRI ================= */
+.sidebar {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 4px 14px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--blue), #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.sidebar-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.camera-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.camera-list::-webkit-scrollbar { width: 6px; }
+.camera-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+/* Satu item kamera di sidebar (button - bisa diklik untuk pindah kamera) */
+.camera-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.camera-item:hover { background: var(--bg-card); }
+
+.camera-item.active {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
+.camera-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Kartu kamera aktif (bukan tombol, cuma tampilan) di atas tombol Switch */
+.camera-item.no-hover { cursor: default; }
+.camera-item.no-hover:hover { background: var(--bg-card); }
+
+.camera-current {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.camera-switch-btn {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.camera-switch-btn:hover { background: var(--bg-card); color: var(--text); }
+
+.camera-switch-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Panel dropdown daftar kamera, muncul saat tombol Switch diklik */
+.camera-picker {
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.camera-search {
+  width: 100%;
+  margin: 0 0 8px 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.camera-search::placeholder { color: var(--text-muted); }
+
+.camera-info { min-width: 0; }
+
+.camera-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.camera-status {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Titik status kecil (hijau / kuning / merah) */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.status-dot.live {
+  background: var(--green);
+  animation: pulse 1.6s infinite;
+}
+
+.status-dot.waiting { background: var(--amber); }
+.status-dot.offline { background: var(--red); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 4px 2px 4px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ================= KOLOM TENGAH (HEADER + VIDEO) ================= */
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-camname {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.header-sep {
+  color: var(--text-muted);
+}
+
+/* Badge LIVE / WAITING / OFFLINE - teks polos + titik, bukan pil berwarna */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.live-badge .live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.live-badge.live { color: var(--green); }
+.live-badge.live .live-dot { background: var(--green); animation: pulse 1.6s infinite; }
+
+.live-badge.waiting { color: var(--amber); }
+.live-badge.waiting .live-dot { background: var(--amber); }
+
+.live-badge.offline { color: var(--red); }
+.live-badge.offline .live-dot { background: var(--red); }
+
+/* Info ringkas di kanan header: orang di frame, total, FPS -
+   teks polos sebaris, bukan kotak-kotak, biar header tetap ramping. */
+.header-chips {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.chip-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.chip-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Panel video: full-bleed, nempel ke tepi (gaya VisionTrack) ---------- */
+.video-panel {
+  background: #05080f;
+  display: flex;
+  flex-direction: column;
+  /* Isi sisa tinggi kolom tengah, bukan cuma setinggi rasio 16:9 -
+     dulu ini bikin area kosong besar di bawah video kalau layarnya tinggi. */
+  flex: 1 1 320px;
+  min-height: 0;
+}
+
+.video-frame {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  background: #05080f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;    /* video utuh, tidak terpotong */
+  display: block;
+}
+
+/* Tampilan pengganti saat stream belum ada */
+.video-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+}
+
+.video-placeholder .ph-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--text-muted);
+}
+
+
+/* ================= PANEL KANAN ================= */
+.rightpanel {
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+/* Kartu generik untuk tiap seksi panel kanan */
+.panel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin: 0 0 12px 0;
+}
+
+/* ---------- Statistik deteksi ---------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stat-card {
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card-2);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ---------- Riwayat deteksi ---------- */
+.detection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.detection-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+/* Badge status per baris riwayat */
+.det-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge-green   { background: var(--green-dim); color: var(--green); }
+.badge-red     { background: var(--red-dim);   color: var(--red); }
+.badge-neutral { background: var(--bg-card);   color: var(--text-muted); }
+
+.det-meta { min-width: 0; flex: 1; }
+
+.det-row-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.det-time {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.det-conf {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.det-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Server monitoring ---------- */
+.server-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.server-row-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.server-name { color: var(--text-muted); font-weight: 600; }
+
+.server-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-track {
+  height: 7px;
+  border-radius: 999px;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.progress-fill.ok   { background: var(--green); }
+.progress-fill.warn { background: var(--amber); }
+.progress-fill.crit { background: var(--red); }
+.progress-fill.na   { background: var(--border); width: 0; }
+
+.server-detail {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* Teks abu-abu kecil saat data kosong */
+.empty-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 10px 0;
+}
+
+/* ---------- Animasi & scrollbar ---------- */
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+  70%  { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.detection-list::-webkit-scrollbar,
+.rightpanel::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.detection-list::-webkit-scrollbar-thumb,
+.rightpanel::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb,
+.main::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+/* ---------- Layar sempit: panel kanan turun ke bawah ---------- */
+@media (max-width: 1100px) {
+  .app {
+    grid-template-columns: 200px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  .rightpanel {
+    grid-column: 1 / -1;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .rightpanel > .panel-card { flex: 1 1 300px; }
+}
+
+/* ---------- Rekap orang per hari (Tahap Database) ---------- */
+.daily-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.daily-row {
+  display: grid;
+  grid-template-columns: 74px 1fr 42px;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.daily-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.daily-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue), #7c3aed);
+  transition: width 0.5s ease;
+}
+
+.daily-count {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-note {
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ---------- Login (Tahap Auth 1) ---------- */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.login-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 10px 0 6px 0;
+}
+
+.login-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+}
+
+.login-input:focus { border-color: var(--blue); }
+
+.login-btn {
+  margin-top: 18px;
+  background: var(--blue);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.login-btn:hover { filter: brightness(1.1); }
+.login-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.login-error {
+  margin-top: 12px;
+  background: var(--red-dim);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: var(--red);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.login-note {
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ---------- Info user di sidebar (Tahap Auth 1) ---------- */
+.sidebar-user {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 10px;
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.user-info { min-width: 0; flex: 1; }
+
+.user-name {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-size: 10px;
+  text-transform: capitalize;
+  color: var(--text-muted);
+}
+
+.user-role.role-super_admin { color: var(--amber); }
+.user-role.role-admin { color: var(--blue); }
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 5px 9px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.logout-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* sidebar-footer tidak lagi menempel ke bawah (digantikan sidebar-user) */
+.sidebar .sidebar-footer { margin-top: 0; }
+
+/* ============================================================
+   STAGE 1 — Menu navigasi sidebar + Halaman Analitik
+   TEMPELKAN blok ini di PALING BAWAH file App.css yang sudah ada.
+   ============================================================ */
+
+/* ---------- Menu navigasi di sidebar ---------- */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.nav-item:hover {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: var(--bg-card);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.nav-ico {
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--blue);
+}
+
+/* ---------- Layout halaman Analitik (sidebar + konten = 2 kolom) ---------- */
+.app-analytics {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.analytics-main {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  gap: 16px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* ---------- Kartu ringkasan (4 kartu) ---------- */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ---------- Grid grafik + status ---------- */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+/* ---------- Grafik batang "Orang per Jam" ---------- */
+.hour-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 160px;
+  padding: 6px 0;
+}
+
+.hour-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.hour-bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  background: var(--blue);
+  transition: height 0.4s ease;
+}
+
+.hour-bar.max {
+  background: var(--green);
+}
+
+.hour-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ---------- Status sistem ---------- */
+.sys-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sys-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.sys-row strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.sys-row strong.text-green { color: var(--green); }
+.sys-row strong.text-amber { color: var(--amber); }
+
+/* ---------- Analitik di layar sempit ---------- */
+@media (max-width: 1000px) {
+  .summary-cards { grid-template-columns: repeat(2, 1fr); }
+  .analytics-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   STAGE 2 — Saklar Deteksi ON/OFF di header
+   ============================================================ */
+
+/* Sejajarkan tinggi tombol saklar dengan chip di sebelahnya */
+.header-chips { align-items: center; }
+
+.detect-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, filter 0.15s;
+}
+
+.detect-toggle .detect-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: background 0.15s;
+}
+
+.detect-toggle.on {
+  background: var(--green-dim);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: var(--green);
+}
+.detect-toggle.on .detect-dot { background: var(--green); }
+
+.detect-toggle.off {
+  background: var(--amber-dim);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: var(--amber);
+}
+.detect-toggle.off .detect-dot { background: var(--amber); }
+
+.detect-toggle:hover { filter: brightness(1.12); }
+.detect-toggle:disabled { opacity: 0.6; cursor: wait; }
+
+/* ============================================================
+   TAHAP A2 — Halaman Kelola User
+   ============================================================ */
+.app-users { grid-template-columns: 240px minmax(0, 1fr); }
+
+.users-main {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  gap: 16px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.users-alert {
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  border: 1px solid;
+}
+.users-alert.error {
+  background: var(--red-dim);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: var(--red);
+}
+.users-alert.ok {
+  background: var(--green-dim);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: var(--green);
+}
+
+/* Form tambah user */
+.user-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.user-form .login-input {
+  flex: 1 1 160px;
+  min-width: 120px;
+}
+
+/* Tombol umum */
+.btn-primary,
+.btn-ghost,
+.btn-danger {
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 14px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: filter 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
+}
+.btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-ghost { background: transparent; color: var(--text-muted); }
+.btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+.btn-danger { background: transparent; color: var(--red); border-color: rgba(239, 68, 68, 0.4); }
+.btn-danger:hover { background: var(--red-dim); }
+.btn-primary:disabled,
+.btn-ghost:disabled,
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* Tabel user */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.user-table th,
+.user-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.user-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.user-table tbody tr:hover { background: var(--bg-card-2); }
+.user-created {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.role-select {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.role-select:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.self-tag {
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--amber);
+  background: var(--amber-dim);
+  border-radius: 999px;
+  padding: 2px 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .user-created { display: none; }
+}
+
+/* ============================================================
+   Panel Recent Activity (Active + Past, gaya VisionTrack)
+   ============================================================ */
+.activity-group + .activity-group { margin-top: 14px; }
+
+.activity-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.active-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.active-item {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.active-item.green { border-left-color: var(--green); }
+.active-item.red   { border-left-color: var(--red); }
+/* Entri "past" (sudah tidak dilacak): sedikit diredupkan */
+.active-item.past { opacity: 0.72; }
+
+.active-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.active-name {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-sub {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.active-dur {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.active-list::-webkit-scrollbar { width: 8px; }
+.active-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+/* ============================================================
+   Halaman Kualitas Model
+   ============================================================ */
+.app-quality { grid-template-columns: 240px minmax(0, 1fr); }
+
+.quality-main {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  gap: 16px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.quality-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+/* Kartu kesimpulan besar di atas */
+.verdict-card {
+  border-radius: var(--radius);
+  border: 1px solid;
+  padding: 16px 18px;
+}
+.verdict-card.crit { background: var(--red-dim);   border-color: rgba(239, 68, 68, 0.45); }
+.verdict-card.warn { background: var(--amber-dim); border-color: rgba(245, 158, 11, 0.45); }
+.verdict-card.ok   { background: var(--green-dim); border-color: rgba(34, 197, 94, 0.4); }
+
+.verdict-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+.verdict-card.crit .verdict-title { color: var(--red); }
+.verdict-card.warn .verdict-title { color: var(--amber); }
+.verdict-card.ok   .verdict-title { color: var(--green); }
+
+.verdict-detail {
+  font-size: 13px;
+  color: var(--text);
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.verdict-principle {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Angka besar di dalam kartu */
+.quality-headline {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.quality-headline.red   { color: var(--red); }
+.quality-headline.green { color: var(--green); }
+
+.quality-headline-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 14px 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 1000px) {
+  .quality-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   Detection History (bagian dari halaman Analytics)
+   ============================================================ */
+.history-filters {
+  display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.filter-field {
+  display: flex; flex-direction: column; gap: 5px;
+  font-size: 11px; color: var(--text-muted);
+}
+.filter-field .login-input { min-width: 150px; }
+.filter-spacer { flex: 1; }
+.btn-primary.as-link { text-decoration: none; display: inline-flex; align-items: center; }
+.history-table th, .history-table td { font-size: 12.5px; }
+.hist-out { color: var(--text-muted); font-size: 11px; }
+.history-pager {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 14px; font-size: 12px; color: var(--text-muted);
+}
+.history-pager-btns { display: flex; gap: 8px; }

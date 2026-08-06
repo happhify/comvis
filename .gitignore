@@ -1,0 +1,23 @@
+# Runtime data & secrets - jangan ikut commit
+.env
+outputs/
+data/
+worker/models/
+worker/videos/
+worker/datasets/
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/.venv/
+*.egg-info/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
