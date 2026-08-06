@@ -6,6 +6,11 @@ worker/models/
 worker/videos/
 worker/datasets/
 
+# Junction lokal biar "python main.py" jalan native di luar Docker
+# tanpa ubah relative path - lihat README bagian "Preview tanpa web".
+worker/config/
+worker/outputs/
+
 # Python
 **/__pycache__/
 **/*.pyc
