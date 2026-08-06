@@ -293,6 +293,11 @@ def save_person_crops(frame, detections, camera_name, frame_id, crop_output_dir)
     if saved_count > 0:
         print(f"[INFO] Saved crops: {saved_count}")
 
+def format_display_label(status, entry_id, confidence):
+    name = "Hadi" if status == "verified" else "Unknown"
+    return f"{name} #{entry_id} {confidence:.2f}"
+
+
 def recognize_detections(
     frame,
     detections,
@@ -324,7 +329,7 @@ def recognize_detections(
 
         if crop_width < min_crop_width or crop_height < min_crop_height:
             detection["status"] = "unknown"
-            detection["display_label"] = "Unknown 0.00"
+            detection["display_label"] = format_display_label("unknown", entry_id, 0.0)
             detection["identity_confidence"] = 0.0
             detection["identity_raw_label"] = "small_crop"
             detection["identity_margin"] = 0.0
@@ -354,7 +359,7 @@ def recognize_detections(
 
             if crop is None or crop.size == 0:
                 detection["status"] = "unknown"
-                detection["display_label"] = "Unknown 0.00"
+                detection["display_label"] = format_display_label("unknown", entry_id, 0.0)
                 detection["identity_confidence"] = 0.0
                 detection["identity_raw_label"] = "empty_crop"
                 detection["identity_margin"] = 0.0
@@ -377,9 +382,9 @@ def recognize_detections(
             result = classifier.predict(crop)
 
             status = result.get("status", "unknown")
-            display_label = result.get("display_label", "Unknown 0.00")
             raw_label = result.get("raw_label", "unknown")
             confidence = result.get("confidence", 0.0)
+            display_label = format_display_label(status, entry_id, confidence)
             margin = result.get("margin", 0.0)
             top2_label = result.get("top2_label", "none")
             top2_confidence = result.get("top2_confidence", 0.0)
@@ -419,10 +424,9 @@ def recognize_detections(
             detection["identity_top2_confidence"] = 0.0
             detection["from_cache"] = True
 
-            if cached_status == "verified":
-                detection["display_label"] = f"Hadi {cached_confidence:.2f}"
-            else:
-                detection["display_label"] = f"Unknown {cached_confidence:.2f}"
+            detection["display_label"] = format_display_label(
+                cached_status, entry_id, cached_confidence
+            )
 
     recognition_cache.cleanup(frame_id)
 

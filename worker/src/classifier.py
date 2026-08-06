@@ -82,11 +82,6 @@ class EmployeeClassifier:
                 "top2_confidence": top2_conf,
                 "margin": margin,
                 "status": status,
-                "display_label": self._get_display_label(
-                    status=status,
-                    confidence=top1_conf,
-                    margin=margin,
-                ),
             }
 
         except Exception as error:
@@ -109,12 +104,6 @@ class EmployeeClassifier:
 
         return "unknown"
 
-    def _get_display_label(self, status, confidence, margin):
-        if status == "verified":
-            return f"Hadi {confidence:.2f}"
-
-        return f"Unknown {confidence:.2f}"
-
     def _unknown_result(self, reason):
         return {
             "raw_label": reason,
@@ -123,5 +112,4 @@ class EmployeeClassifier:
             "top2_confidence": 0.0,
             "margin": 0.0,
             "status": "unknown",
-            "display_label": "Unknown 0.00",
         }
