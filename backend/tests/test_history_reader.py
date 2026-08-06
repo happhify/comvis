@@ -185,10 +185,12 @@ def test_attendance_absent_when_no_verified_session_today(tmp_path):
 
 def test_attendance_present_uses_earliest_verified_session_as_arrival(tmp_path):
     log_path = tmp_path / "log.csv"
+    # Log asli ditulis berurutan kronologis (append-only) - baris paling
+    # awal harus muncul lebih dulu di file, sama seperti worker sungguhan.
     write_csv(log_path, [
-        make_row(f"{TODAY} 10:00:00", entry_id=1, status="verified"),
-        # Sesi lebih pagi tapi entry_id beda (gap waktu -> sesi terpisah)
         make_row(f"{TODAY} 08:15:00", entry_id=2, status="verified"),
+        # Sesi lebih siang, entry_id beda (gap waktu -> sesi terpisah)
+        make_row(f"{TODAY} 10:00:00", entry_id=1, status="verified"),
     ])
 
     result = get_attendance_today(log_path=log_path)

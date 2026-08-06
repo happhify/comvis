@@ -78,50 +78,81 @@ def _make_session(eid, items):
     }
 
 
+def _select_candidate_lines(data_lines, date_text):
+    """
+    Log ditulis berurutan dari waktu ke waktu (append-only), jadi baris
+    untuk SATU tanggal selalu menumpuk berurutan di ekor file. Kalau
+    date_text diisi, scan dari BELAKANG dan berhenti begitu keluar dari
+    tanggal itu - biayanya sebanding dengan jumlah baris HARI ITU, bukan
+    seluruh riwayat. Tanpa ini, query "hari ini" ikut membaca ulang
+    seluruh log lama setiap kali dipanggil, dan detection_log.csv bisa
+    tumbuh ratusan ribu baris setelah berjalan berhari-hari (worker
+    menulis satu baris per deteksi per frame).
+    """
+    if not date_text:
+        return data_lines
+
+    candidates = []
+    seen_match = False
+    for line in reversed(data_lines):
+        if line.startswith(date_text):
+            candidates.append(line)
+            seen_match = True
+        elif seen_match:
+            break
+    candidates.reverse()
+    return candidates
+
+
 def _build_sessions(log_path, date_text):
     path = Path(log_path)
     if not path.exists():
         return None
 
-    matched = []
     try:
         with open(path, encoding="utf-8", newline="") as f:
-            reader = csv.reader(f)
-            header = next(reader, None)
-            if not header:
-                return []
-            col = {name: i for i, name in enumerate(header)}
-            ts_i = col.get("timestamp")
-            if ts_i is None:
-                return []
-            st_i = col.get("identity_status")
-            lb_i = col.get("identity_label")
-            cf_i = col.get("recognition_confidence")
-            cam_i = col.get("camera_name")
-            nt_i = col.get("note")
-
-            def get(row, i):
-                return row[i] if (i is not None and i < len(row)) else ""
-
-            for row in reader:
-                if ts_i >= len(row):
-                    continue
-                tsval = row[ts_i]
-                # filter tanggal via TEKS dulu (murah) sebelum parsing
-                if date_text and not tsval.startswith(date_text):
-                    continue
-                ts = _parse_ts(tsval)
-                if ts is None:
-                    continue
-                matched.append((ts, {
-                    "identity_status": get(row, st_i),
-                    "identity_label": get(row, lb_i),
-                    "recognition_confidence": get(row, cf_i),
-                    "camera_name": get(row, cam_i) or "kamera_1",
-                    "note": get(row, nt_i),
-                }))
+            lines = f.readlines()
     except Exception:
         return None
+
+    if not lines:
+        return []
+
+    header = next(csv.reader([lines[0]]), None)
+    if not header:
+        return []
+    col = {name: i for i, name in enumerate(header)}
+    ts_i = col.get("timestamp")
+    if ts_i is None:
+        return []
+    st_i = col.get("identity_status")
+    lb_i = col.get("identity_label")
+    cf_i = col.get("recognition_confidence")
+    cam_i = col.get("camera_name")
+    nt_i = col.get("note")
+
+    def get(row, i):
+        return row[i] if (i is not None and i < len(row)) else ""
+
+    candidate_lines = _select_candidate_lines(lines[1:], date_text)
+
+    matched = []
+    for row in csv.reader(candidate_lines):
+        if not row or ts_i >= len(row):
+            continue
+        tsval = row[ts_i]
+        if date_text and not tsval.startswith(date_text):
+            continue
+        ts = _parse_ts(tsval)
+        if ts is None:
+            continue
+        matched.append((ts, {
+            "identity_status": get(row, st_i),
+            "identity_label": get(row, lb_i),
+            "recognition_confidence": get(row, cf_i),
+            "camera_name": get(row, cam_i) or "kamera_1",
+            "note": get(row, nt_i),
+        }))
 
     groups = {}
     for ts, r in matched:
@@ -173,24 +204,72 @@ def history_rows_for_csv(date_text=None, status="all", log_path=DEFAULT_LOG_PATH
 
 def get_attendance_today(log_path=DEFAULT_LOG_PATH):
     """
-    Status kehadiran hari ini, dihitung dari sesi "verified" pertama dan
-    terakhir di detection_log.csv - bukan dari kamera/tracking langsung.
+    Status kehadiran hari ini: jam "verified" pertama & terakhir di
+    detection_log.csv - bukan dari kamera/tracking langsung.
 
     Catatan penting: cuma mencerminkan kamera yang BENAR-BENAR aktif hari
     ini (sistem cuma mengawasi satu kamera sekaligus). "absent" berarti
     belum terdeteksi di kamera yang diawasi, BUKAN bukti orangnya tidak
     ada di gedung.
+
+    Sengaja TIDAK numpang ke _build_sessions(): baris HARI INI SENDIRI
+    bisa ratusan ribu (satu baris per orang per frame), jadi endpoint ini
+    dipoll dashboard tiap 60 detik tidak boleh ikut menanggung biaya
+    regex entry_id + pengelompokan sesi + sorting yang dipakai fitur
+    Riwayat Deteksi. Di sini cukup 1x scan cari timestamp verified
+    ter-awal/ter-akhir, pakai split string mentah (bukan csv.reader)
+    karena kolom log ini tidak pernah butuh quoting.
     """
     today = datetime.now().strftime("%Y-%m-%d")
-    sessions = _build_sessions(log_path, today) or []
-    verified = [s for s in sessions if s["identity_status"] == "verified"]
+    absent = {"date": today, "status": "absent", "arrived_at": None, "last_seen": None}
 
-    if not verified:
-        return {"date": today, "status": "absent", "arrived_at": None, "last_seen": None}
+    path = Path(log_path)
+    if not path.exists():
+        return absent
 
-    return {
-        "date": today,
-        "status": "present",
-        "arrived_at": min(s["first_seen"] for s in verified),
-        "last_seen": max(s["last_seen"] for s in verified),
-    }
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            lines = f.readlines()
+    except Exception:
+        return absent
+
+    if not lines:
+        return absent
+
+    header = next(csv.reader([lines[0]]), None)
+    if not header:
+        return absent
+    col = {name: i for i, name in enumerate(header)}
+    ts_i = col.get("timestamp")
+    st_i = col.get("identity_status")
+    if ts_i is None or st_i is None:
+        return absent
+
+    arrived_at = None
+    last_seen = None
+
+    # Log ditulis berurutan dari waktu ke waktu -> baris hari ini
+    # menumpuk di ekor file. Scan dari BELAKANG: match pertama yang
+    # ketemu = jam TERAKHIR terlihat, match yang terus ditimpa sampai
+    # keluar dari tanggal ini = jam PERTAMA terlihat (paling awal).
+    seen_today = False
+    for line in reversed(lines[1:]):
+        if not line.startswith(today):
+            if seen_today:
+                break
+            continue
+
+        seen_today = True
+        fields = line.rstrip("\n").split(",")
+        if st_i >= len(fields) or ts_i >= len(fields) or fields[st_i] != "verified":
+            continue
+
+        tsval = fields[ts_i]
+        if last_seen is None:
+            last_seen = tsval
+        arrived_at = tsval
+
+    if arrived_at is None:
+        return absent
+
+    return {"date": today, "status": "present", "arrived_at": arrived_at, "last_seen": last_seen}
