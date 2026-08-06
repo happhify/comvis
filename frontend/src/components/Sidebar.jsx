@@ -35,6 +35,7 @@ function Sidebar({
   const menu = [
     { key: "live", icon: "▣", label: "Live Monitor" },
     { key: "analytics", icon: "▤", label: "Analytics" },
+    { key: "quality", icon: "✓", label: "Model Quality" },
   ];
   // Menu User Management hanya muncul untuk super_admin
   if (user?.role === "super_admin") {

@@ -10,11 +10,11 @@ from app.routers import (
     control,
     daily_stats,
     detections,
+    model_quality,
     server,
     stats,
     stream,
     users,
-    validation,
 )
 
 # Siapkan database auth + user default saat backend pertama jalan
@@ -55,7 +55,7 @@ app.include_router(users.router)
 app.include_router(stats.router)
 app.include_router(control.router)
 app.include_router(detections.router)
-app.include_router(validation.router)
+app.include_router(model_quality.router)
 app.include_router(daily_stats.router)
 app.include_router(server.router)
 app.include_router(stream.router)

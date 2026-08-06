@@ -17,12 +17,14 @@ from pathlib import Path
 
 import yaml
 
-from app.validation_reader import POSITIVE_TEST_DONE
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = PROJECT_ROOT / "config" / "camera.yaml"
 NEGATIVE_SUMMARY = PROJECT_ROOT / "outputs" / "logs" / "negative_only_summary.csv"
 POSITIVE_SUMMARY = PROJECT_ROOT / "outputs" / "logs" / "positive_test_summary.csv"
+
+# Setelah positive test Hadi selesai DAN hasilnya dinyatakan bagus, ubah
+# nilai ini menjadi True. Selama False, verdict selalu "belum final".
+POSITIVE_TEST_DONE = False
 
 
 def _to_float(value, default=None):

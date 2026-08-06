@@ -6,19 +6,8 @@ from fastapi.responses import Response
 
 from app.deps import get_current_user
 from app.history_reader import history_rows_for_csv, read_history
-from app.log_reader import read_recent_detections
 
 router = APIRouter(prefix="/api", tags=["detections"])
-
-
-@router.get("/recent-detections")
-def recent_detections(limit: int = 10, user=Depends(get_current_user)):
-    """
-    Mengambil riwayat deteksi terbaru dari outputs/logs/detection_log.csv.
-    """
-    limit = max(1, min(limit, 100))
-
-    return read_recent_detections(limit=limit)
 
 
 @router.get("/detection-history")

@@ -2,19 +2,8 @@ from fastapi import APIRouter, Depends
 
 from app.deps import get_current_user
 from app.model_quality import get_model_quality
-from app.validation_reader import get_validation_status
 
-router = APIRouter(prefix="/api", tags=["validation"])
-
-
-@router.get("/validation-status")
-def validation_status(user=Depends(get_current_user)):
-    """
-    Status validasi model untuk warning di dashboard (Tahap 10):
-    - positive test Hadi sudah/belum final
-    - kandidat false positive dari negative_only_summary.csv
-    """
-    return get_validation_status()
+router = APIRouter(prefix="/api", tags=["model-quality"])
 
 
 @router.get("/model-quality")
