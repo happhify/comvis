@@ -12,6 +12,11 @@ def get_color_by_status(status):
 
 
 def draw_person_boxes(frame, detections):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.5
+    text_thickness = 1
+    frame_h, frame_w = frame.shape[:2]
+
     for detection in detections:
         x1, y1, x2, y2 = detection["bbox"]
 
@@ -20,22 +25,27 @@ def draw_person_boxes(frame, detections):
 
         color = get_color_by_status(status)
 
-        cv2.rectangle(
-            frame,
-            (x1, y1),
-            (x2, y2),
-            color,
-            2,
+        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1, cv2.LINE_AA)
+
+        (text_w, text_h), baseline = cv2.getTextSize(
+            display_label, font, font_scale, text_thickness
         )
 
+        chip_y2 = y1
+        chip_y1 = max(chip_y2 - text_h - baseline - 6, 0)
+        chip_x1 = x1
+        chip_x2 = min(chip_x1 + text_w + 8, frame_w)
+
+        cv2.rectangle(frame, (chip_x1, chip_y1), (chip_x2, chip_y2), color, -1, cv2.LINE_AA)
         cv2.putText(
             frame,
             display_label,
-            (x1, max(y1 - 10, 30)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            color,
-            2,
+            (chip_x1 + 4, chip_y2 - baseline - 3),
+            font,
+            font_scale,
+            (0, 0, 0),
+            text_thickness,
+            cv2.LINE_AA,
         )
 
     return frame
