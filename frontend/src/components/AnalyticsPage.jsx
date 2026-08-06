@@ -45,6 +45,7 @@ function AnalyticsPage({ stats, control }) {
   const [daily, setDaily] = useState(null);
   const [hourly, setHourly] = useState(null);
   const [attendance, setAttendance] = useState(null);
+  const [attendanceError, setAttendanceError] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -60,8 +61,10 @@ function AnalyticsPage({ stats, control }) {
       }
       try {
         setAttendance(await getAttendanceToday());
-      } catch {
+        setAttendanceError("");
+      } catch (e) {
         setAttendance(null);
+        setAttendanceError(e.message || "Failed to load attendance.");
       }
     }
     load();
@@ -135,6 +138,12 @@ function AnalyticsPage({ stats, control }) {
           <div className="header-camname">Analytics</div>
         </div>
       </header>
+
+      {attendanceError && (
+        <div className="users-alert error">
+          Attendance: {attendanceError}
+        </div>
+      )}
 
       {attendance && attendance.employees?.length > 0 && (
         <section className="panel-card">
