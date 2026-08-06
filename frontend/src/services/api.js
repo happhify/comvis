@@ -149,10 +149,6 @@ export function resetUserPassword(username, password) {
   });
 }
 
-// (Tahap Kualitas) Ringkasan validasi & ambang model
-export function getModelQuality() {
-  return fetchJson("/api/model-quality");
-}
 // (Riwayat) Daftar kejadian deteksi dengan filter
 export function getDetectionHistory({ date, status, limit, offset }) {
   const p = new URLSearchParams();

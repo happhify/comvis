@@ -9,7 +9,6 @@ import ServerStats from "./components/ServerStats";
 import DailyStats from "./components/DailyStats";
 import AnalyticsPage from "./components/AnalyticsPage";
 import UsersPage from "./components/UsersPage";
-import ModelQualityPage from "./components/ModelQualityPage";
 import LoginPage from "./components/LoginPage";
 
 import {
@@ -209,8 +208,7 @@ function App() {
   const appClass =
     "app" +
     (page === "analytics" ? " app-analytics" : "") +
-    (page === "users" ? " app-users" : "") +
-    (page === "quality" ? " app-quality" : "");
+    (page === "users" ? " app-users" : "");
 
   return (
     <div className={appClass}>
@@ -227,8 +225,6 @@ function App() {
 
       {page === "analytics" ? (
         <AnalyticsPage stats={stats} control={control} />
-      ) : page === "quality" ? (
-        <ModelQualityPage />
       ) : page === "users" && isSuperAdmin ? (
         <UsersPage currentUser={user} />
       ) : (

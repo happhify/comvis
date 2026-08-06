@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
 
-# app/*_reader.py & app/model_quality.py resolve paths as
+# app/*_reader.py resolve paths as
 # Path(__file__).resolve().parents[1] / "config|outputs|data" -> that
 # is /app here, so config/outputs/data must be bind-mounted at /app/*.
 EXPOSE 8000
