@@ -161,7 +161,7 @@ def build_verdict(negative, positive):
 
     return {
         "level": "ok",
-        "title": "Tervalidasi (batas prototype)",
+        "title": "Tervalidasi",
         "detail": (
             "Positive test selesai dan negative test tidak menemukan kandidat "
             "false positive."
@@ -178,8 +178,8 @@ def get_model_quality():
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "positive_test_done": POSITIVE_TEST_DONE,
         "principle": (
-            "Lebih baik Unverified daripada salah Verified. "
-            "Sistem sengaja dibuat konservatif."
+            "Sistem dirancang secara konservatif: risiko salah mengenali "
+            "lebih diutamakan untuk dihindari dibanding kecepatan verifikasi."
         ),
         "thresholds": read_thresholds(),
         "negative_test": negative,

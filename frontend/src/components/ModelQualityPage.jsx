@@ -77,7 +77,7 @@ function ModelQualityPage() {
 
           {!neg?.available ? (
             <div className="empty-note">
-              Belum ada hasil. Jalankan scripts/evaluate_negative_only.py
+              Belum ada data pengujian untuk model saat ini.
             </div>
           ) : (
             <>
@@ -93,8 +93,9 @@ function ModelQualityPage() {
                 <Row label="Status" value={neg.evaluation_status} />
               </div>
               <div className="daily-note">
-                Rentang log: {neg.window_start} &rarr; {neg.window_end}. Artinya:
-                saat target tidak ada, sistem masih sesekali menyebut namanya.
+                Periode pengujian: {neg.window_start} &rarr; {neg.window_end}.
+                Mengukur seberapa sering sistem tetap memberi label "Verified"
+                saat target sebenarnya tidak berada di depan kamera.
               </div>
             </>
           )}
@@ -106,8 +107,7 @@ function ModelQualityPage() {
 
           {!pos?.available ? (
             <div className="empty-note">
-              Belum dijalankan. Lakukan protokol burst solo 1-2 menit, lalu jalankan
-              scripts/evaluate_positive_test.py
+              Belum ada data pengujian untuk model saat ini.
             </div>
           ) : (
             <>
@@ -127,8 +127,9 @@ function ModelQualityPage() {
                 <Row label="Status" value={pos.evaluation_status} />
               </div>
               <div className="daily-note">
-                Unverified yang tinggi itu wajar: sistem memilih diam daripada
-                salah menyebut nama.
+                Tingkat Unverified yang tinggi merupakan hasil yang diharapkan
+                &mdash; sistem dirancang untuk tidak memberi label saat tidak
+                yakin, dibanding berisiko salah mengenali.
               </div>
             </>
           )}
@@ -139,7 +140,7 @@ function ModelQualityPage() {
           <h3 className="panel-title">Ambang yang Sedang Dipakai</h3>
 
           {!th?.available ? (
-            <div className="empty-note">config/camera.yaml tidak terbaca.</div>
+            <div className="empty-note">Konfigurasi ambang tidak dapat dimuat.</div>
           ) : (
             <>
               <div className="sys-status-list">
@@ -156,8 +157,9 @@ function ModelQualityPage() {
                 <Row label="Cache IoU" value={th.cache_iou_threshold} />
               </div>
               <div className="daily-note">
-                Ambang Verified sengaja dibuat tinggi (0.97). Konsekuensinya target
-                sering jadi Unverified &mdash; itu pilihan sadar, bukan kelemahan.
+                Ambang Verified sengaja ditetapkan tinggi untuk meminimalkan
+                kesalahan identifikasi, dengan konsekuensi status Unverified
+                lebih sering muncul.
               </div>
             </>
           )}
