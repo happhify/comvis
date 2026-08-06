@@ -1,6 +1,9 @@
 import csv
+from datetime import datetime
 
-from app.history_reader import history_rows_for_csv, read_history
+from app.history_reader import get_attendance_today, history_rows_for_csv, read_history
+
+TODAY = datetime.now().strftime("%Y-%m-%d")
 
 HEADER = [
     "timestamp", "camera_name", "source_type", "frame_id", "detection_id",
@@ -156,3 +159,62 @@ def test_history_rows_for_csv_respects_status_filter(tmp_path):
     rows = history_rows_for_csv(status="verified", log_path=log_path)
     assert len(rows) == 1
     assert rows[0]["identity_status"] == "verified"
+
+
+# ============================================================
+# get_attendance_today
+# ============================================================
+
+def test_attendance_absent_when_log_missing(tmp_path):
+    result = get_attendance_today(log_path=tmp_path / "nope.csv")
+    assert result == {
+        "date": TODAY, "status": "absent", "arrived_at": None, "last_seen": None,
+    }
+
+
+def test_attendance_absent_when_no_verified_session_today(tmp_path):
+    log_path = tmp_path / "log.csv"
+    write_csv(log_path, [
+        make_row(f"{TODAY} 08:00:00", entry_id=1, status="unknown"),
+    ])
+
+    result = get_attendance_today(log_path=log_path)
+    assert result["status"] == "absent"
+    assert result["arrived_at"] is None
+
+
+def test_attendance_present_uses_earliest_verified_session_as_arrival(tmp_path):
+    log_path = tmp_path / "log.csv"
+    write_csv(log_path, [
+        make_row(f"{TODAY} 10:00:00", entry_id=1, status="verified"),
+        # Sesi lebih pagi tapi entry_id beda (gap waktu -> sesi terpisah)
+        make_row(f"{TODAY} 08:15:00", entry_id=2, status="verified"),
+    ])
+
+    result = get_attendance_today(log_path=log_path)
+    assert result["status"] == "present"
+    assert result["arrived_at"] == f"{TODAY} 08:15:00"
+
+
+def test_attendance_last_seen_uses_latest_verified_session(tmp_path):
+    log_path = tmp_path / "log.csv"
+    write_csv(log_path, [
+        make_row(f"{TODAY} 08:00:00", entry_id=1, status="verified"),
+        make_row(f"{TODAY} 16:30:00", entry_id=2, status="verified"),
+    ])
+
+    result = get_attendance_today(log_path=log_path)
+    assert result["last_seen"] == f"{TODAY} 16:30:00"
+
+
+def test_attendance_ignores_unverified_sessions_and_other_dates(tmp_path):
+    log_path = tmp_path / "log.csv"
+    write_csv(log_path, [
+        make_row("2020-01-01 08:00:00", entry_id=1, status="verified"),  # tanggal lain
+        make_row(f"{TODAY} 09:00:00", entry_id=2, status="unknown"),     # bukan verified
+        make_row(f"{TODAY} 09:05:00", entry_id=3, status="verified"),
+    ])
+
+    result = get_attendance_today(log_path=log_path)
+    assert result["status"] == "present"
+    assert result["arrived_at"] == f"{TODAY} 09:05:00"

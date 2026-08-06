@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import auth_db
 from app.routers import (
+    attendance,
     auth,
     cameras,
     control,
@@ -48,6 +49,7 @@ app.add_middleware(
 # Routers
 # ============================================================
 
+app.include_router(attendance.router)
 app.include_router(auth.router)
 app.include_router(cameras.router)
 app.include_router(users.router)

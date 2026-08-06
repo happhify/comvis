@@ -907,6 +907,43 @@ body {
   min-width: 0;
 }
 
+/* ---------- Kartu status kehadiran hari ini ---------- */
+.attendance-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.attendance-card.present { border-left-color: var(--green); }
+.attendance-card.absent  { border-left-color: var(--amber); }
+
+.attendance-status {
+  font-size: 16px;
+  font-weight: 800;
+}
+.attendance-status.present { color: var(--green); }
+.attendance-status.absent  { color: var(--amber); }
+
+.attendance-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.attendance-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  max-width: 360px;
+  text-align: right;
+  line-height: 1.4;
+}
+
 /* ---------- Kartu ringkasan (4 kartu) ---------- */
 .summary-cards {
   display: grid;

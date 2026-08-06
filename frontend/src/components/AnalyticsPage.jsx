@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  getAttendanceToday,
   getDailyStats,
   getHourlyStats,
   getDetectionHistory,
@@ -34,9 +35,16 @@ function badge(s) {
   return v === "verified" ? "EMPLOYEE" : "UNKNOWN";
 }
 
+function fmtTime(ts) {
+  if (!ts) return "";
+  const parts = String(ts).split(" ");
+  return parts.length > 1 ? parts[1].slice(0, 5) : ts;
+}
+
 function AnalyticsPage({ stats, control }) {
   const [daily, setDaily] = useState(null);
   const [hourly, setHourly] = useState(null);
+  const [attendance, setAttendance] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -49,6 +57,11 @@ function AnalyticsPage({ stats, control }) {
         setHourly(await getHourlyStats());
       } catch {
         setHourly(null);
+      }
+      try {
+        setAttendance(await getAttendanceToday());
+      } catch {
+        setAttendance(null);
       }
     }
     load();
@@ -122,6 +135,27 @@ function AnalyticsPage({ stats, control }) {
           <div className="header-camname">Analytics</div>
         </div>
       </header>
+
+      {attendance && (
+        <div className={`attendance-card ${attendance.status}`}>
+          <div>
+            <div className={`attendance-status ${attendance.status}`}>
+              {attendance.status === "present"
+                ? `Present since ${fmtTime(attendance.arrived_at)}`
+                : "Not yet arrived today"}
+            </div>
+            {attendance.status === "present" && attendance.last_seen && (
+              <div className="attendance-detail">
+                Last seen at {fmtTime(attendance.last_seen)}
+              </div>
+            )}
+          </div>
+          <div className="attendance-note">
+            Based on the camera(s) actually monitored today &mdash; "not yet
+            arrived" doesn't guarantee they're not in the building.
+          </div>
+        </div>
+      )}
 
       <div className="summary-cards">
         <div className="summary-card">

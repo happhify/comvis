@@ -169,3 +169,28 @@ def history_rows_for_csv(date_text=None, status="all", log_path=DEFAULT_LOG_PATH
     if status != "all":
         sessions = [s for s in sessions if s["identity_status"] == status]
     return sessions
+
+
+def get_attendance_today(log_path=DEFAULT_LOG_PATH):
+    """
+    Status kehadiran hari ini, dihitung dari sesi "verified" pertama dan
+    terakhir di detection_log.csv - bukan dari kamera/tracking langsung.
+
+    Catatan penting: cuma mencerminkan kamera yang BENAR-BENAR aktif hari
+    ini (sistem cuma mengawasi satu kamera sekaligus). "absent" berarti
+    belum terdeteksi di kamera yang diawasi, BUKAN bukti orangnya tidak
+    ada di gedung.
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+    sessions = _build_sessions(log_path, today) or []
+    verified = [s for s in sessions if s["identity_status"] == "verified"]
+
+    if not verified:
+        return {"date": today, "status": "absent", "arrived_at": None, "last_seen": None}
+
+    return {
+        "date": today,
+        "status": "present",
+        "arrived_at": min(s["first_seen"] for s in verified),
+        "last_seen": max(s["last_seen"] for s in verified),
+    }

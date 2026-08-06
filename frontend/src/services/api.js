@@ -149,6 +149,11 @@ export function resetUserPassword(username, password) {
   });
 }
 
+// Status kehadiran hari ini (hadir sejak jam berapa / belum datang)
+export function getAttendanceToday() {
+  return fetchJson("/api/attendance-today");
+}
+
 // (Riwayat) Daftar kejadian deteksi dengan filter
 export function getDetectionHistory({ date, status, limit, offset }) {
   const p = new URLSearchParams();
