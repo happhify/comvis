@@ -57,6 +57,27 @@ Kalau akurasi turun (kondisi cahaya/sudut kamera baru, dll), kumpulkan data dari
 
 Script pendukung lain ada di `worker/scripts/` (audit dataset, balance kelas, review manual, dst — lihat komentar di masing-masing file). Script hasil investigasi/tuning yang sudah selesai dipindah ke `worker/scripts/archive/`.
 
+## Testing
+
+Backend dan worker punya test suite pytest terpisah (masing-masing servis punya dependency sendiri).
+
+**Backend** (butuh Python biasa, tanpa GPU):
+```bash
+cd backend
+python -m venv .venv
+./.venv/Scripts/pip install -r requirements.txt pytest
+./.venv/Scripts/python -m pytest
+```
+
+**Worker** (butuh torch+CUDA - kalau sudah ada venv native buat preview/retraining seperti di atas, pakai itu saja):
+```bash
+cd worker
+"D:\Projects\comvis\venv\Scripts\python.exe" -m pip install pytest
+"D:\Projects\comvis\venv\Scripts\python.exe" -m pytest
+```
+
+Test difokuskan ke logic yang murni/deterministik dan langsung berkaitan dengan ketepatan absensi: status klasifikasi (verified/unknown), IoU tracking & TTL cache, agregasi sesi riwayat dari CSV, auth (hash password, session, role), dan pembacaan threshold/kualitas model. Tidak mencakup integrasi RTSP/GPU/browser - itu tetap perlu dicek manual.
+
 ## Struktur folder
 
 ```
