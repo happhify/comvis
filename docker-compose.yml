@@ -5,6 +5,8 @@ services:
       dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
+    environment:
+      - TZ=Asia/Jakarta
     volumes:
       - ./config:/app/config:ro
       - ./outputs:/app/outputs
@@ -19,6 +21,7 @@ services:
       - .env
     environment:
       - BACKEND_URL=http://backend:8000
+      - TZ=Asia/Jakarta
     volumes:
       - ./config:/app/config:ro
       - ./outputs:/app/outputs

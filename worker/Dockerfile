@@ -2,10 +2,14 @@ FROM pytorch/pytorch:2.4.1-cuda12.1-cudnn9-runtime
 
 WORKDIR /app
 
-# opencv butuh libGL/libglib walau pakai paket headless
+# opencv butuh libGL/libglib walau pakai paket headless.
+# tzdata dibutuhkan supaya env var TZ (di docker-compose.yml) benar-benar
+# diikuti - tanpa ini datetime.now() Python selalu UTC walau TZ di-set,
+# karena base image ini tidak menyertakan /usr/share/zoneinfo.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 COPY worker/requirements.txt .

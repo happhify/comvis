@@ -31,7 +31,7 @@ recognition:
   enabled: true
   model_path: "models/body_best.pt"
   device: 0
-  verified_threshold: 0.97
+  verified_threshold: 0.90
   unknown_threshold: 0.70
   min_margin: 0.40
   min_crop_width: 40
