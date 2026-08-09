@@ -92,7 +92,11 @@ def connect_camera(
         reader = RTSPReader(
             source=fallback_video,
             source_name=camera_name,
-            reconnect=False,
+            # reconnect=True disengaja: video lokal ini juga perlu di-reopen
+            # saat mentok EOF (bukan cuma saat RTSP putus), supaya video
+            # otomatis loop lagi dari awal alih-alih macet permanen dengan
+            # cap.read() gagal terus tanpa henti.
+            reconnect=True,
             reconnect_delay_seconds=reconnect_delay_seconds,
             max_failed_reads=max_failed_reads,
         )
