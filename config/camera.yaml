@@ -41,7 +41,7 @@ output:
   save_video: true
   video_output_path: "outputs/videos/result_kamera_1.mp4"
 
-  save_crops: true
+  save_crops: false
   crop_output_dir: "outputs/crops"
   crop_every_n_frames: 10
 

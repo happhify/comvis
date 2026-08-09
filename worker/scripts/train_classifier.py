@@ -96,9 +96,10 @@ def main():
 
     model.train(
         data=DATASET_DIR,
-        epochs=30,
+        epochs=50,
         imgsz=224,
-        batch=16,
+        batch=32,
+        patience=10,
         device=device,
         project=PROJECT_DIR,
         name=RUN_NAME,
