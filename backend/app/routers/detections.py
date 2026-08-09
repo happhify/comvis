@@ -21,15 +21,23 @@ def detection_history(date: str | None = None, status: str = "all",
 @router.get("/detection-history/export")
 def detection_history_export(date: str | None = None, status: str = "all",
                              user=Depends(get_current_user)):
-    """Ekspor riwayat sesuai filter sebagai berkas CSV."""
+    """Ekspor riwayat sesuai filter sebagai berkas CSV.
+
+    Delimiter ";" (bukan ",") + BOM UTF-8 di depan: default region Excel
+    Indonesia pakai "," sebagai pemisah desimal, jadi list separator-nya
+    ";" - CSV ber-koma yang dibuka langsung (double-click) di Excel bakal
+    numpuk semua kolom jadi satu. BOM supaya karakter non-ASCII (kalau ada)
+    ke-render benar, bukan cuma biar kolom kepisah.
+    """
     rows = history_rows_for_csv(date_text=date, status=status)
     buf = _io.StringIO()
-    w = _csv.writer(buf)
+    w = _csv.writer(buf, delimiter=";")
     w.writerow(["Jam masuk", "Jam keluar", "Durasi (detik)", "Kamera",
                 "Status", "Label", "Keyakinan", "Frame"])
     for s in rows:
         w.writerow([s["first_seen"], s["last_seen"], s["duration_seconds"], s["camera"],
                     s["status"], s["identity_label"], s["confidence"], s["frames"]])
     fname = f"riwayat_{date or 'semua'}.csv"
-    return Response(content=buf.getvalue(), media_type="text/csv",
+    content = chr(0xFEFF) + buf.getvalue()  # BOM biar Excel deteksi UTF-8 dgn benar
+    return Response(content=content, media_type="text/csv",
                     headers={"Content-Disposition": f"attachment; filename={fname}"})
